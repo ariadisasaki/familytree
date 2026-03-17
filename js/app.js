@@ -117,6 +117,8 @@ function buildTree(data){
     root.children = Object.values(people);
   }
 
+  console.log("TREE:", JSON.stringify(root, null, 2));
+
   drawTree(root);
 }
 

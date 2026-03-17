@@ -73,36 +73,52 @@ buildTree(members);
 // =============================
 function buildTree(data){
 
-let map = {};
+let persons = {};
+let couples = {};
 
-// buat node
-data.forEach(person=>{
-map[person.id] = {
-name: person.nama,
-children:[]
+// simpan semua orang
+data.forEach(p=>{
+persons[p.id] = {
+id:p.id,
+name:p.nama,
+ayah:p.ayah_id || null,
+ibu:p.ibu_id || null
 };
 });
 
-// hubungkan anak ke ayah
-data.forEach(person=>{
+// buat node pasangan berdasarkan ayah + ibu
+data.forEach(p=>{
 
-if(person.ayah_id && map[person.ayah_id]){
-map[person.ayah_id].children.push(map[person.id]);
+if(p.ayah_id && p.ibu_id){
+
+let key = p.ayah_id + "_" + p.ibu_id;
+
+if(!couples[key]){
+
+couples[key] = {
+name: persons[p.ayah_id].name + " + " + persons[p.ibu_id].name,
+children:[]
+};
+
+}
+
+couples[key].children.push({
+name:p.nama,
+children:[]
+});
+
 }
 
 });
 
-// buat virtual root
-let root = {
+// root virtual
+let root={
 name:"Keluarga",
 children:[]
 };
 
-// semua orang tanpa ayah menjadi cabang utama
-data.forEach(person=>{
-if(!person.ayah_id){
-root.children.push(map[person.id]);
-}
+Object.values(couples).forEach(c=>{
+root.children.push(c);
 });
 
 drawTree(root);

@@ -72,41 +72,29 @@ buildTree(members);
 // BUILD TREE STRUCTURE
 // =============================
 function buildTree(data){
+  let map = {};
 
-let map = {};
+  // buat node
+  data.forEach(person=>{
+    map[person.id] = {
+      name: person.nama,
+      spouse: person.pasangan || null, // simpan pasangan
+      children: []
+    };
+  });
 
-// buat node
-data.forEach(person=>{
-map[person.id] = {
-name: person.nama,
-children:[]
-};
-});
+  // hubungkan anak ke ayah
+  data.forEach(person=>{
+    if(person.ayah_id && map[person.ayah_id]){
+      map[person.ayah_id].children.push(map[person.id]);
+    }
+  });
 
-// hubungkan anak ke ayah
-data.forEach(person=>{
+  // buat virtual root
+  let roots = data.filter(p => !p.ayah_id).map(p => map[p.id]);
+  let root = (roots.length === 1) ? roots[0] : {name:"Keluarga", children: roots};
 
-if(person.ayah_id && map[person.ayah_id]){
-map[person.ayah_id].children.push(map[person.id]);
-}
-
-});
-
-// buat virtual root
-let root = {
-name:"Keluarga",
-children:[]
-};
-
-// semua orang tanpa ayah menjadi cabang utama
-data.forEach(person=>{
-if(!person.ayah_id){
-root.children.push(map[person.id]);
-}
-});
-
-drawTree(root);
-
+  drawTree(root);
 }
 
 // =============================
@@ -180,14 +168,9 @@ nodes.append("circle")
 // TEXT
 
 nodes.append("text")
-
-.attr("dy",4)
-
-.attr("x",-10)
-
-.text(d=>d.data.name);
-
-}
+  .attr("dy", 4)
+  .attr("x", -10)
+  .text(d => d.data.spouse ? d.data.name + " + " + d.data.spouse : d.data.name);
 
 
 // =============================

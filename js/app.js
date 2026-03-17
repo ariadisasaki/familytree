@@ -118,10 +118,20 @@ function drawTree(treeData){
 
   // NODES
   const nodes = svg.selectAll("g")
-    .data(root.descendants())
-    .enter()
-    .append("g")
-    .attr("transform", d => `translate(${d.x},${d.y})`);
+  .data(root.descendants())
+  .enter()
+  .append("g")
+  .attr("transform", d => `translate(${d.x},${d.y})`)
+  .style("cursor", "pointer")
+  .on("click", (event, d) => {
+    console.log("CLICK:", d);
+
+    if (d.data.id) {
+      window.location.href = `profile.html?id=${d.data.id}`;
+    } else {
+      alert("ID tidak ada di node");
+    }
+  });
 
   nodes.append("circle")
     .attr("r",20)

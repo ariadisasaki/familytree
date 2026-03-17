@@ -134,8 +134,12 @@ function drawTree(treeData){
   .style("cursor", "pointer")
   .text(d => d.data.name)
   .on("click", (event, d) => {
+    console.log("DATA NODE:", d); // debug
+
     if (d.data.id) {
       window.location.href = `profile.html?id=${d.data.id}`;
+    } else {
+      alert("ID tidak ditemukan di node");
     }
   });
 }

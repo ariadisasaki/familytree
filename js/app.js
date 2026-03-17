@@ -3,7 +3,6 @@
 // =============================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
 // =============================
 // FIREBASE CONFIG
 // =============================
@@ -15,19 +14,16 @@ const firebaseConfig = {
   messagingSenderId: "33038229996",
   appId: "1:33038229996:web:1a9dad0f9c73877b97a0c9"
 };
-
 // =============================
 // INIT FIREBASE
 // =============================
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
 // =============================
 // LOAD DATA
 // =============================
 async function loadData() {
   const querySnapshot = await getDocs(collection(db,"anggota_keluarga"));
-
   let members = [];
   querySnapshot.forEach(doc=>{
     members.push({
@@ -35,18 +31,14 @@ async function loadData() {
       ...doc.data()
     });
   });
-
   buildTree(members);
 }
-
 // =============================
 // BUILD TREE (PASANGAN SYSTEM)
 // =============================
 function buildTree(data){
-
   let pasanganMap = {};
   let parentNodes = {};
-
   // =========================
   // 1. BUAT NODE ORANG
   // =========================
@@ -57,15 +49,12 @@ function buildTree(data){
       children: []
     };
   });
-
   // =========================
   // 2. PASANGAN DARI pasangan_id
   // =========================
   data.forEach(p => {
     if(p.pasangan_id){
-
       let key = [p.id, p.pasangan_id].sort().join("_");
-
       if(!pasanganMap[key]){
         pasanganMap[key] = {
           name: "",
@@ -76,16 +65,12 @@ function buildTree(data){
       }
     }
   });
-
   // =========================
   // 3. PASANGAN DARI ANAK
   // =========================
   data.forEach(p => {
-
     if(p.ayah_id && p.ibu_id){
-
       let key = [p.ayah_id, p.ibu_id].sort().join("_");
-
       if(!pasanganMap[key]){
         pasanganMap[key] = {
           name: "",
@@ -94,32 +79,25 @@ function buildTree(data){
           children: []
         };
       }
-
       pasanganMap[key].children.push({
         id: p.id,
         name: p.nama
       });
     }
   });
-
   // =========================
   // 4. BENTUK NAMA PASANGAN
   // =========================
   Object.keys(pasanganMap).forEach(key => {
-
     let pasangan = pasanganMap[key];
-
     let nama1 = parentNodes[pasangan.ayah]?.name || "?";
     let nama2 = parentNodes[pasangan.ibu]?.name || "?";
-
     pasangan.name = nama1 + " + " + nama2;
-
     // tempel ke salah satu (ayah)
     if(parentNodes[pasangan.ayah]){
       parentNodes[pasangan.ayah].children.push(pasangan);
     }
   });
-
   // =========================
   // 5. ROOT
   // =========================
@@ -127,80 +105,14 @@ function buildTree(data){
     name: "Keluarga",
     children: []
   };
-
   data.forEach(p => {
     if(!p.ayah_id && !p.ibu_id){
       root.children.push(parentNodes[p.id]);
     }
   });
-
   if(root.children.length === 0){
     root.children = Object.values(parentNodes);
   }
-
-  drawTree(root);
-}
-
-  // =========================
-  // 2. KELOMPOKKAN ANAK BERDASARKAN AYAH+IBU
-  // =========================
-  data.forEach(p => {
-
-    if(p.ayah_id && p.ibu_id){
-
-      let key = p.ayah_id + "_" + p.ibu_id;
-
-      if(!pasanganMap[key]){
-        pasanganMap[key] = {
-          name: "",
-          children: []
-        };
-      }
-
-      pasanganMap[key].children.push({
-        id: p.id,
-        name: p.nama
-      });
-    }
-  });
-
-  // =========================
-  // 3. HUBUNGKAN PASANGAN KE ORANG TUA
-  // =========================
-  Object.keys(pasanganMap).forEach(key => {
-
-    let [ayah, ibu] = key.split("_");
-
-    let namaAyah = parentNodes[ayah]?.name || "?";
-    let namaIbu = parentNodes[ibu]?.name || "?";
-
-    pasanganMap[key].name = namaAyah + " + " + namaIbu;
-
-    // pasang ke node ayah (biar tidak double)
-    if(parentNodes[ayah]){
-      parentNodes[ayah].children.push(pasanganMap[key]);
-    }
-  });
-
-  // =========================
-  // 4. ROOT
-  // =========================
-  let root = {
-    name: "Keluarga",
-    children: []
-  };
-
-  data.forEach(p => {
-    if(!p.ayah_id && !p.ibu_id){
-      root.children.push(parentNodes[p.id]);
-    }
-  });
-
-  // fallback (kalau root kosong)
-  if(root.children.length === 0){
-    root.children = Object.values(parentNodes);
-  }
-
   drawTree(root);
 }
 
@@ -208,24 +120,18 @@ function buildTree(data){
 // DRAW TREE WITH D3 (VERTICAL)
 // =============================
 function drawTree(treeData){
-
   const width = 1000;
   const height = 600;
-
   d3.select("#tree").html(""); // reset biar tidak dobel
-
   const svg = d3.select("#tree")
     .append("svg")
     .attr("width", width)
     .attr("height", height)
     .append("g")
     .attr("transform", "translate(50,50)");
-
   const root = d3.hierarchy(treeData);
-
   const treeLayout = d3.tree().size([width-100, height-100]);
   treeLayout(root);
-
   // =============================
   // LINES
   // =============================
@@ -239,7 +145,6 @@ function drawTree(treeData){
     .attr("y2", d => d.target.y)
     .attr("stroke", "#888")
     .attr("stroke-width", 2);
-
   // =============================
   // NODES
   // =============================
@@ -254,17 +159,14 @@ function drawTree(treeData){
         window.location.href = `profile.html?id=${d.data.id}`;
       }
     });
-
   nodes.append("circle")
     .attr("r",20)
     .attr("fill","#2c7a7b");
-
   nodes.append("text")
     .attr("dy", 4)
     .attr("x", -10)
     .text(d => d.data.name);
 }
-
 // =============================
 // START APP
 // =============================

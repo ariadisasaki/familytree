@@ -129,15 +129,15 @@ function drawTree(treeData){
 
   // TEXT + klik untuk profile
   nodes.append("text")
-    .attr("dy",4)
-    .attr("x",-10)
-    .style("cursor","pointer")
-    .text(d => d.data.name)
-    .on("click", d => {
-      if(d.data.id){
-        window.location.href = `profile.html?id=${d.data.id}`;
-      }
-    });
+  .attr("dy", 4)
+  .attr("x", -10)
+  .style("cursor", "pointer")
+  .text(d => d.data.name)
+  .on("click", (event, d) => {
+    if (d.data.id) {
+      window.location.href = `profile.html?id=${d.data.id}`;
+    }
+  });
 }
 
 // =============================

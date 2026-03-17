@@ -19,8 +19,6 @@ let nama=document.getElementById("nama").value
 let ayah=document.getElementById("ayah").value
 let ibu=document.getElementById("ibu").value
 let pasangan=document.getElementById("pasangan").value
-let lahir=document.getElementById("lahir").value
-
 let file=document.getElementById("foto").files[0]
 
 let foto_url=""
@@ -51,7 +49,6 @@ nama:nama,
 ayah_id:ayah,
 ibu_id:ibu,
 pasangan_id:pasangan,
-tanggal_lahir:lahir,
 foto_url:foto_url
 
 })

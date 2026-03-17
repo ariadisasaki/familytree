@@ -100,10 +100,8 @@ root = map[person.id];
 });
 
 if(!root){
-
-console.error("Root keluarga tidak ditemukan");
+console.error("Root tidak ditemukan");
 return;
-
 }
 
 drawTree(root);
@@ -113,7 +111,6 @@ drawTree(root);
 // =============================
 // DRAW TREE WITH D3
 // =============================
-
 function drawTree(treeData){
 
 const width = 1000;

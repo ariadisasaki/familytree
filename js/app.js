@@ -76,7 +76,7 @@ function buildTree(data){
 let map = {};
 let root = null;
 
-// buat map
+// buat node
 data.forEach(person=>{
 map[person.id] = {
 name: person.nama,
@@ -93,8 +93,12 @@ map[person.ayah_id].children.push(map[person.id]);
 
 }
 
-// cari root (tidak punya ayah dan ibu)
-if(!person.ayah_id && !person.ibu_id && !root){
+});
+
+// cari root = orang yang tidak punya ayah
+data.forEach(person=>{
+
+if(!person.ayah_id && !root){
 
 root = map[person.id];
 
@@ -102,7 +106,7 @@ root = map[person.id];
 
 });
 
-// jika root masih null ambil orang pertama
+// fallback jika tidak ditemukan
 if(!root){
 
 root = map[data[0].id];

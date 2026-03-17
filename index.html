@@ -4,6 +4,7 @@
 <head>
 
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Silsilah Keluarga</title>
@@ -19,7 +20,9 @@
 <body>
 
 
+<!-- ============================= -->
 <!-- SPLASH SCREEN -->
+<!-- ============================= -->
 
 <div id="splash">
 
@@ -36,44 +39,80 @@
 </div>
 
 
+
+<!-- ============================= -->
 <!-- HEADER -->
+<!-- ============================= -->
 
 <header>
 
-<h2>Pohon Keluarga</h2>
+<h2>Silsilah Keluarga</h2>
 
 <a href="tambah.html" class="btn">+ Tambah Anggota</a>
 
 </header>
 
 
-<!-- TREE -->
+
+<!-- ============================= -->
+<!-- TREE AREA -->
+<!-- ============================= -->
 
 <div id="tree"></div>
 
 
 
+<!-- ============================= -->
+<!-- JS APP -->
+<!-- ============================= -->
+
 <script type="module" src="js/app.js"></script>
 
 
+
+<!-- ============================= -->
+<!-- SERVICE WORKER -->
+<!-- ============================= -->
+
 <script>
 
-if('serviceWorker' in navigator){
+if ("serviceWorker" in navigator) {
 
-navigator.serviceWorker.register('sw.js')
+navigator.serviceWorker.register("sw.js");
 
 }
 
+</script>
 
-window.addEventListener("load",()=>{
 
-setTimeout(()=>{
 
-document.getElementById("splash").classList.add("hide")
+<!-- ============================= -->
+<!-- SPLASH SCRIPT -->
+<!-- ============================= -->
 
-},2500)
+<script>
 
-})
+document.addEventListener("DOMContentLoaded", function(){
+
+setTimeout(function(){
+
+const splash = document.getElementById("splash");
+
+if(splash){
+
+splash.style.opacity="0";
+
+setTimeout(function(){
+
+splash.style.display="none";
+
+},500);
+
+}
+
+},2000);
+
+});
 
 </script>
 

@@ -72,27 +72,38 @@ buildTree(members);
 // BUILD TREE STRUCTURE
 // =============================
 function buildTree(data){
-  let map = {};
+  let persons = {};
+  let couples = {};
 
-  // buat node
-  data.forEach(person=>{
-    map[person.id] = {
-      name: person.nama,
-      spouse: person.pasangan || null, // simpan pasangan
+  // simpan semua orang
+  data.forEach(p => {
+    persons[p.id] = {
+      id: p.id,
+      name: p.nama,
+      ayah: p.ayah_id || null,
+      ibu: p.ibu_id || null,
+      pasangan: p.pasangan || null,
       children: []
     };
   });
 
-  // hubungkan anak ke ayah
-  data.forEach(person=>{
-    if(person.ayah_id && map[person.ayah_id]){
-      map[person.ayah_id].children.push(map[person.id]);
+  // buat node pasangan
+  data.forEach(p => {
+    if(p.ayah && p.ibu){
+      let key = p.ayah + "_" + p.ibu;
+      if(!couples[key]){
+        couples[key] = {
+          name: persons[p.ayah].name + " + " + persons[p.ibu].name,
+          children: []
+        };
+      }
+      couples[key].children.push({name: p.nama, children: []});
     }
   });
 
-  // buat virtual root
-  let roots = data.filter(p => !p.ayah_id).map(p => map[p.id]);
-  let root = (roots.length === 1) ? roots[0] : {name:"Keluarga", children: roots};
+  // root virtual
+  let root = {name: "Keluarga", children: []};
+  Object.values(couples).forEach(c => root.children.push(c));
 
   drawTree(root);
 }

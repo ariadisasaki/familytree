@@ -10,6 +10,16 @@ if (!id) {
   container.innerHTML = "<p>ID tidak ditemukan di URL</p>";
 }
 
+const container = document.getElementById("profile");
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+if (!id) {
+  container.innerHTML = "<p>ID tidak ditemukan di URL</p>";
+  throw new Error("ID kosong");
+}
+
 async function loadProfile() {
   try {
     console.log("ID:", id);

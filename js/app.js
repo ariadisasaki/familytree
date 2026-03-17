@@ -39,7 +39,6 @@ async function loadData() {
 function buildTree(data){
 
   let people = {};
-  let pasanganMap = {};
 
   // =========================
   // 1. BUAT NODE ORANG
@@ -53,33 +52,37 @@ function buildTree(data){
   });
 
   // =========================
-  // 2. BUAT PASANGAN DARI ANAK
+  // 2. PROSES ANAK → BUAT PASANGAN
   // =========================
   data.forEach(p => {
 
     if(p.ayah_id && p.ibu_id){
 
-      let key = p.ayah_id + "_" + p.ibu_id;
+      let ayah = people[p.ayah_id];
+      let ibu  = people[p.ibu_id];
 
-      if(!pasanganMap[key]){
+      if(!ayah) return;
 
-        let ayahName = people[p.ayah_id]?.name || "?";
-        let ibuName = people[p.ibu_id]?.name || "?";
+      // cari apakah pasangan sudah ada
+      let pasanganNode = ayah.children.find(c => 
+        c.isPasangan && c.pasanganId === p.ibu_id
+      );
 
-        pasanganMap[key] = {
-          name: ayahName + " + " + ibuName,
-          ayah: p.ayah_id,
+      // kalau belum ada → buat
+      if(!pasanganNode){
+
+        pasanganNode = {
+          name: ayah.name + " + " + (ibu ? ibu.name : "?"),
+          pasanganId: p.ibu_id,
+          isPasangan: true,
           children: []
         };
 
-        // tempel ke ayah
-        if(people[p.ayah_id]){
-          people[p.ayah_id].children.push(pasanganMap[key]);
-        }
+        ayah.children.push(pasanganNode);
       }
 
       // masukkan anak ke pasangan
-      pasanganMap[key].children.push({
+      pasanganNode.children.push({
         id: p.id,
         name: p.nama
       });
@@ -87,35 +90,7 @@ function buildTree(data){
   });
 
   // =========================
-  // 3. TAMBAH PASANGAN TANPA ANAK
-  // =========================
-  data.forEach(p => {
-
-    if(p.pasangan_id){
-
-      let key = p.id + "_" + p.pasangan_id;
-
-      if(!pasanganMap[key]){
-
-        let pasanganName = people[p.pasangan_id]?.name || "?";
-
-        let pasanganNode = {
-          name: p.nama + " + " + pasanganName,
-          ayah: p.id,
-          children: []
-        };
-
-        pasanganMap[key] = pasanganNode;
-
-        if(people[p.id]){
-          people[p.id].children.push(pasanganNode);
-        }
-      }
-    }
-  });
-
-  // =========================
-  // 4. ROOT
+  // 3. ROOT
   // =========================
   let root = {
     name: "Keluarga",
@@ -128,6 +103,7 @@ function buildTree(data){
     }
   });
 
+  // fallback
   if(root.children.length === 0){
     root.children = Object.values(people);
   }

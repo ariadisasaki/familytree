@@ -27,6 +27,7 @@ const db = getFirestore(app);
 // =============================
 async function loadData() {
   const querySnapshot = await getDocs(collection(db,"anggota_keluarga"));
+
   let members = [];
   querySnapshot.forEach(doc=>{
     members.push({
@@ -34,54 +35,88 @@ async function loadData() {
       ...doc.data()
     });
   });
+
   buildTree(members);
 }
 
 // =============================
-// BUILD TREE
+// BUILD TREE (PASANGAN SYSTEM)
 // =============================
 function buildTree(data){
 
-  let map = {};
+  let pasanganMap = {};
+  let parentNodes = {};
 
-  // bantu cari nama berdasarkan id
-  function getNameById(id){
-    const found = data.find(p => p.id === id);
-    return found ? found.nama : "?";
-  }
-
-  // buat node
-  data.forEach(person=>{
-    let pasanganNama = "";
-
-    if(person.pasangan_id){
-      pasanganNama = getNameById(person.pasangan_id);
-    }
-
-    map[person.id] = {
-      id: person.id,
-      name: pasanganNama 
-        ? person.nama + " + " + pasanganNama
-        : person.nama,
+  // =========================
+  // 1. BUAT NODE ORANG
+  // =========================
+  data.forEach(p => {
+    parentNodes[p.id] = {
+      id: p.id,
+      name: p.nama,
       children: []
     };
   });
 
-  // hubungkan anak ke ayah
-  data.forEach(person=>{
-    if(person.ayah_id && map[person.ayah_id]){
-      map[person.ayah_id].children.push(map[person.id]);
+  // =========================
+  // 2. KELOMPOKKAN ANAK BERDASARKAN AYAH+IBU
+  // =========================
+  data.forEach(p => {
+
+    if(p.ayah_id && p.ibu_id){
+
+      let key = p.ayah_id + "_" + p.ibu_id;
+
+      if(!pasanganMap[key]){
+        pasanganMap[key] = {
+          name: "",
+          children: []
+        };
+      }
+
+      pasanganMap[key].children.push({
+        id: p.id,
+        name: p.nama
+      });
     }
   });
 
-  // root
-  let root = { name:"Keluarga", children: [] };
+  // =========================
+  // 3. HUBUNGKAN PASANGAN KE ORANG TUA
+  // =========================
+  Object.keys(pasanganMap).forEach(key => {
 
-  data.forEach(person=>{
-    if(!person.ayah_id){
-      root.children.push(map[person.id]);
+    let [ayah, ibu] = key.split("_");
+
+    let namaAyah = parentNodes[ayah]?.name || "?";
+    let namaIbu = parentNodes[ibu]?.name || "?";
+
+    pasanganMap[key].name = namaAyah + " + " + namaIbu;
+
+    // pasang ke node ayah (biar tidak double)
+    if(parentNodes[ayah]){
+      parentNodes[ayah].children.push(pasanganMap[key]);
     }
   });
+
+  // =========================
+  // 4. ROOT
+  // =========================
+  let root = {
+    name: "Keluarga",
+    children: []
+  };
+
+  data.forEach(p => {
+    if(!p.ayah_id && !p.ibu_id){
+      root.children.push(parentNodes[p.id]);
+    }
+  });
+
+  // fallback (kalau root kosong)
+  if(root.children.length === 0){
+    root.children = Object.values(parentNodes);
+  }
 
   drawTree(root);
 }
@@ -90,8 +125,11 @@ function buildTree(data){
 // DRAW TREE WITH D3 (VERTICAL)
 // =============================
 function drawTree(treeData){
+
   const width = 1000;
   const height = 600;
+
+  d3.select("#tree").html(""); // reset biar tidak dobel
 
   const svg = d3.select("#tree")
     .append("svg")
@@ -101,10 +139,13 @@ function drawTree(treeData){
     .attr("transform", "translate(50,50)");
 
   const root = d3.hierarchy(treeData);
+
   const treeLayout = d3.tree().size([width-100, height-100]);
   treeLayout(root);
 
+  // =============================
   // LINES
+  // =============================
   svg.selectAll("line")
     .data(root.links())
     .enter()
@@ -116,42 +157,29 @@ function drawTree(treeData){
     .attr("stroke", "#888")
     .attr("stroke-width", 2);
 
+  // =============================
   // NODES
+  // =============================
   const nodes = svg.selectAll("g")
-  .data(root.descendants())
-  .enter()
-  .append("g")
-  .attr("transform", d => `translate(${d.x},${d.y})`)
-  .style("cursor", "pointer")
-  .on("click", (event, d) => {
-    console.log("CLICK:", d);
-
-    if (d.data.id) {
-      window.location.href = `profile.html?id=${d.data.id}`;
-    } else {
-      alert("ID tidak ada di node");
-    }
-  });
+    .data(root.descendants())
+    .enter()
+    .append("g")
+    .attr("transform", d => `translate(${d.x},${d.y})`)
+    .style("cursor", "pointer")
+    .on("click", (event, d) => {
+      if (d.data.id) {
+        window.location.href = `profile.html?id=${d.data.id}`;
+      }
+    });
 
   nodes.append("circle")
     .attr("r",20)
     .attr("fill","#2c7a7b");
 
-  // TEXT + klik untuk profile
   nodes.append("text")
-  .attr("dy", 4)
-  .attr("x", -10)
-  .style("cursor", "pointer")
-  .text(d => d.data.name)
-  .on("click", (event, d) => {
-    console.log("DATA NODE:", d); // debug
-
-    if (d.data.id) {
-      window.location.href = `profile.html?id=${d.data.id}`;
-    } else {
-      alert("ID tidak ditemukan di node");
-    }
-  });
+    .attr("dy", 4)
+    .attr("x", -10)
+    .text(d => d.data.name);
 }
 
 // =============================

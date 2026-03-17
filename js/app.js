@@ -72,7 +72,6 @@ buildTree(members);
 // BUILD TREE STRUCTURE
 // =============================
 function buildTree(data){
-function buildTree(data){
 
 let map = {};
 

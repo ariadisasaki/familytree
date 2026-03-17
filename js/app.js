@@ -41,13 +41,28 @@ async function loadData() {
 // BUILD TREE
 // =============================
 function buildTree(data){
+
   let map = {};
 
-  // buat node dengan pasangan
+  // bantu cari nama berdasarkan id
+  function getNameById(id){
+    const found = data.find(p => p.id === id);
+    return found ? found.nama : "?";
+  }
+
+  // buat node
   data.forEach(person=>{
+    let pasanganNama = "";
+
+    if(person.pasangan_id){
+      pasanganNama = getNameById(person.pasangan_id);
+    }
+
     map[person.id] = {
       id: person.id,
-      name: person.nama + (person.pasangan_id ? " + ?" : ""), // sementara pasangan ?
+      name: pasanganNama 
+        ? person.nama + " + " + pasanganNama
+        : person.nama,
       children: []
     };
   });
@@ -59,8 +74,9 @@ function buildTree(data){
     }
   });
 
-  // virtual root
+  // root
   let root = { name:"Keluarga", children: [] };
+
   data.forEach(person=>{
     if(!person.ayah_id){
       root.children.push(map[person.id]);

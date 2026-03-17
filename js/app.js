@@ -71,24 +71,19 @@ buildTree(members);
 // =============================
 // BUILD TREE STRUCTURE
 // =============================
-
 function buildTree(data){
 
 let map = {};
+let root = null;
 
 data.forEach(person=>{
 
 map[person.id] = {
-
 name: person.nama,
-
 children: []
-
 };
 
 });
-
-let root = null;
 
 data.forEach(person=>{
 
@@ -96,7 +91,7 @@ if(person.ayah_id && map[person.ayah_id]){
 
 map[person.ayah_id].children.push(map[person.id]);
 
-}else{
+}else if(!root){
 
 root = map[person.id];
 
@@ -104,10 +99,16 @@ root = map[person.id];
 
 });
 
-drawTree(root);
+if(!root){
+
+console.error("Root keluarga tidak ditemukan");
+return;
 
 }
 
+drawTree(root);
+
+}
 
 // =============================
 // DRAW TREE WITH D3

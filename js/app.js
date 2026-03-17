@@ -41,7 +41,7 @@ function buildTree(data){
   let people = {};
 
   // =========================
-  // 1. BUAT NODE ORANG
+  // 1. BUAT NODE ORANG (SATU SAJA!)
   // =========================
   data.forEach(p => {
     people[p.id] = {
@@ -52,37 +52,46 @@ function buildTree(data){
   });
 
   // =========================
-  // 2. PROSES ANAK → BUAT PASANGAN
+  // 2. LOOP ANAK → PASTIKAN MASUK KE TREE
   // =========================
   data.forEach(p => {
 
-    if(p.ayah_id && p.ibu_id){
+    if(p.ayah_id){
 
-      let ayah = people[p.ayah_id];
-      let ibu  = people[p.ibu_id];
+      let ayahNode = people[p.ayah_id];
+      if(!ayahNode) return;
 
-      if(!ayah) return;
+      // =====================
+      // CARI / BUAT PASANGAN
+      // =====================
+      let pasanganNode = null;
 
-      // cari apakah pasangan sudah ada
-      let pasanganNode = ayah.children.find(c => 
-        c.isPasangan && c.pasanganId === p.ibu_id
-      );
+      if(p.ibu_id){
+        pasanganNode = ayahNode.children.find(c => 
+          c.type === "pasangan" && c.ibu_id === p.ibu_id
+        );
 
-      // kalau belum ada → buat
-      if(!pasanganNode){
+        if(!pasanganNode){
 
-        pasanganNode = {
-          name: ayah.name + " + " + (ibu ? ibu.name : "?"),
-          pasanganId: p.ibu_id,
-          isPasangan: true,
-          children: []
-        };
+          let ibuName = people[p.ibu_id]?.name || "?";
 
-        ayah.children.push(pasanganNode);
+          pasanganNode = {
+            type: "pasangan",
+            ibu_id: p.ibu_id,
+            name: ayahNode.name + " + " + ibuName,
+            children: []
+          };
+
+          ayahNode.children.push(pasanganNode);
+        }
       }
 
-      // masukkan anak ke pasangan
-      pasanganNode.children.push({
+      // =====================
+      // MASUKKAN ANAK
+      // =====================
+      let targetParent = pasanganNode || ayahNode;
+
+      targetParent.children.push({
         id: p.id,
         name: p.nama
       });
@@ -90,7 +99,7 @@ function buildTree(data){
   });
 
   // =========================
-  // 3. ROOT
+  // 3. ROOT (ORANG TANPA ORANG TUA)
   // =========================
   let root = {
     name: "Keluarga",

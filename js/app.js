@@ -17,17 +17,17 @@ getDocs
 
 const firebaseConfig = {
 
-apiKey: "API_KEY",
+apiKey: "AIzaSyDm1FftYv_07WDZf-IfNm_OeTkE-_7ajuU",
 
-authDomain: "PROJECT_ID.firebaseapp.com",
+authDomain: "familytree-ea709.firebaseapp.com",
 
-projectId: "PROJECT_ID",
+projectId: "familytree-ea709",
 
-storageBucket: "PROJECT_ID.appspot.com",
+storageBucket: "familytree-ea709.firebasestorage.app",
 
-messagingSenderId: "SENDER_ID",
+messagingSenderId: "33038229996",
 
-appId: "APP_ID"
+appId: "1:33038229996:web:1a9dad0f9c73877b97a0c9"
 
 };
 

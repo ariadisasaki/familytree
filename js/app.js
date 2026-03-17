@@ -1,29 +1,198 @@
-import { db } from "./firebase.js"
+// =============================
+// FIREBASE IMPORT
+// =============================
 
-import { collection, getDocs }
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js"
+import {
+getFirestore,
+collection,
+getDocs
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-import { renderTree } from "./tree.js"
 
-async function load(){
+// =============================
+// FIREBASE CONFIG
+// =============================
 
-const querySnapshot = await getDocs(collection(db,"anggota_keluarga"))
+const firebaseConfig = {
 
-let data=[]
+apiKey: "API_KEY",
+
+authDomain: "PROJECT_ID.firebaseapp.com",
+
+projectId: "PROJECT_ID",
+
+storageBucket: "PROJECT_ID.appspot.com",
+
+messagingSenderId: "SENDER_ID",
+
+appId: "APP_ID"
+
+};
+
+
+// =============================
+// INIT FIREBASE
+// =============================
+
+const app = initializeApp(firebaseConfig);
+
+const db = getFirestore(app);
+
+
+// =============================
+// LOAD DATA
+// =============================
+
+async function loadData(){
+
+const querySnapshot = await getDocs(collection(db,"anggota_keluarga"));
+
+let members = [];
 
 querySnapshot.forEach(doc=>{
 
-let d=doc.data()
+members.push({
 
-d.id=doc.id
+id: doc.id,
 
-data.push(d)
+...doc.data()
 
-})
+});
 
-renderTree(data)
+});
+
+buildTree(members);
 
 }
 
-load()
+
+// =============================
+// BUILD TREE STRUCTURE
+// =============================
+
+function buildTree(data){
+
+let map = {};
+
+data.forEach(person=>{
+
+map[person.id] = {
+
+name: person.nama,
+
+children: []
+
+};
+
+});
+
+let root = null;
+
+data.forEach(person=>{
+
+if(person.ayah_id && map[person.ayah_id]){
+
+map[person.ayah_id].children.push(map[person.id]);
+
+}else{
+
+root = map[person.id];
+
+}
+
+});
+
+drawTree(root);
+
+}
+
+
+// =============================
+// DRAW TREE WITH D3
+// =============================
+
+function drawTree(treeData){
+
+const width = 1000;
+
+const height = 600;
+
+const svg = d3.select("#tree")
+
+.append("svg")
+
+.attr("width",width)
+
+.attr("height",height)
+
+.append("g")
+
+.attr("transform","translate(40,0)");
+
+
+const root = d3.hierarchy(treeData);
+
+const treeLayout = d3.tree().size([height-100,width-200]);
+
+treeLayout(root);
+
+
+// LINES
+
+svg.selectAll("line")
+
+.data(root.links())
+
+.enter()
+
+.append("line")
+
+.attr("x1",d=>d.source.y)
+
+.attr("y1",d=>d.source.x)
+
+.attr("x2",d=>d.target.y)
+
+.attr("y2",d=>d.target.x);
+
+
+// NODES
+
+const nodes = svg.selectAll("g")
+
+.data(root.descendants())
+
+.enter()
+
+.append("g")
+
+.attr("transform",d=>`translate(${d.y},${d.x})`);
+
+
+// CIRCLE
+
+nodes.append("circle")
+
+.attr("r",20);
+
+
+// TEXT
+
+nodes.append("text")
+
+.attr("dy",4)
+
+.attr("x",-10)
+
+.text(d=>d.data.name);
+
+}
+
+
+// =============================
+// START APP
+// =============================
+
+loadData();

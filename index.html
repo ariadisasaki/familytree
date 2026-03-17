@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Silsilah Keluarga</title>
+
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="css/style.css">
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+</head>
+
+<body>
+
+<div id="splash">Silsilah Keluarga</div>
+
+<header>
+<h2>Pohon Keluarga</h2>
+<a href="tambah.html" class="btn">+ Tambah Anggota</a>
+</header>
+
+<div id="tree"></div>
+
+<script type="module" src="js/app.js"></script>
+
+<script>
+
+if('serviceWorker' in navigator){
+navigator.serviceWorker.register('sw.js')
+}
+
+setTimeout(()=>{
+document.getElementById("splash").style.display="none"
+},2000)
+
+</script>
+
+</body>
+</html>

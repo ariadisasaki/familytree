@@ -72,53 +72,44 @@ buildTree(members);
 // BUILD TREE STRUCTURE
 // =============================
 function buildTree(data){
+function buildTree(data){
 
-let persons = {};
-let couples = {};
+let map = {};
 
-// simpan semua orang
-data.forEach(p=>{
-persons[p.id] = {
-id:p.id,
-name:p.nama,
-ayah:p.ayah_id || null,
-ibu:p.ibu_id || null
+// buat node
+data.forEach(person=>{
+map[person.id] = {
+name: person.nama,
+children:[]
 };
 });
 
-// buat node pasangan berdasarkan ayah + ibu
-data.forEach(p=>{
+// hubungkan anak ke orang tua
+data.forEach(person=>{
 
-if(p.ayah_id && p.ibu_id){
-
-let key = p.ayah_id + "_" + p.ibu_id;
-
-if(!couples[key]){
-
-couples[key] = {
-name: persons[p.ayah_id].name + " + " + persons[p.ibu_id].name,
-children:[]
-};
-
+// prioritas ayah
+if(person.ayah_id && map[person.ayah_id]){
+map[person.ayah_id].children.push(map[person.id]);
 }
 
-couples[key].children.push({
-name:p.nama,
-children:[]
-});
-
+// jika ayah tidak ada pakai ibu
+else if(person.ibu_id && map[person.ibu_id]){
+map[person.ibu_id].children.push(map[person.id]);
 }
 
 });
 
 // root virtual
-let root={
+let root = {
 name:"Keluarga",
 children:[]
 };
 
-Object.values(couples).forEach(c=>{
-root.children.push(c);
+// semua orang tanpa orang tua jadi root
+data.forEach(person=>{
+if(!person.ayah_id && !person.ibu_id){
+root.children.push(map[person.id]);
+}
 });
 
 drawTree(root);

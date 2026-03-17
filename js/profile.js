@@ -1,32 +1,36 @@
 import { db } from "./firebase.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+const nameParam = params.get("nama"); // ganti id → nama agar lebih fleksibel
 
-if (!id) {
-  document.getElementById("profile").innerHTML = "<p>ID anggota tidak ditemukan di URL</p>";
+if (!nameParam) {
+  document.getElementById("profile").innerHTML = "<p>Nama anggota tidak ditemukan di URL</p>";
+}
+
+// Fungsi ambil nama lengkap dari ID
+async function getNameById(personId) {
+  if (!personId) return "-";
+  const docRef = collection(db, "anggota_keluarga");
+  const q = query(docRef, where("__name__", "==", personId));
+  const snap = await getDocs(q);
+  if (snap.empty) return "-";
+  return snap.docs[0].data().nama;
 }
 
 async function loadProfile() {
   try {
-    const ref = doc(db, "anggota_keluarga", id);
-    const snap = await getDoc(ref);
+    // Cari document berdasarkan field nama
+    const q = query(collection(db, "anggota_keluarga"), where("nama", "==", nameParam));
+    const querySnapshot = await getDocs(q);
 
-    if (!snap.exists()) {
+    if (querySnapshot.empty) {
       document.getElementById("profile").innerHTML = "<p>Data anggota tidak ditemukan</p>";
       return;
     }
 
-    const d = snap.data();
-
-    // Ambil nama ayah, ibu, pasangan dari Firestore jika ID tersedia
-    async function getNameById(personId) {
-      if (!personId) return "-";
-      const docRef = doc(db, "anggota_keluarga", personId);
-      const docSnap = await getDoc(docRef);
-      return docSnap.exists() ? docSnap.data().nama : "-";
-    }
+    const docSnap = querySnapshot.docs[0];
+    const d = docSnap.data();
 
     const ayahName = await getNameById(d.ayah_id);
     const ibuName = await getNameById(d.ibu_id);
@@ -39,7 +43,6 @@ async function loadProfile() {
       <p><strong>Ibu:</strong> ${ibuName}</p>
       <p><strong>Pasangan:</strong> ${pasanganName}</p>
     `;
-
   } catch (err) {
     console.error("Gagal load profile:", err);
     document.getElementById("profile").innerHTML = "<p>Terjadi kesalahan saat memuat data</p>";

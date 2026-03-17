@@ -31,8 +31,6 @@ document.getElementById("profile").innerHTML=
 
 <p>Pasangan : ${d.pasangan_id || '-'}</p>
 
-<p>Tahun Lahir : ${d.tanggal_lahir || '-'}</p>
-
 `
 
 }

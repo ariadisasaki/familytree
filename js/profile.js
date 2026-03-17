@@ -1,48 +1,51 @@
 import { db } from "./firebase.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+const container = document.getElementById("profile");
+
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
 if (!id) {
-  document.getElementById("profile").innerHTML = "<p>ID anggota tidak ditemukan di URL</p>";
+  container.innerHTML = "<p>ID tidak ditemukan di URL</p>";
 }
 
 async function loadProfile() {
   try {
-    const ref = doc(db,"anggota_keluarga", id);
+    console.log("ID:", id);
+
+    const ref = doc(db, "anggota_keluarga", id);
     const snap = await getDoc(ref);
 
     if (!snap.exists()) {
-      document.getElementById("profile").innerHTML = "<p>Data anggota tidak ditemukan</p>";
+      container.innerHTML = "<p>Data tidak ditemukan di database</p>";
       return;
     }
 
     const d = snap.data();
+    console.log("DATA:", d);
 
-    // Ambil nama ayah, ibu, pasangan jika ada
-    async function getNameById(personId) {
-      if (!personId) return "-";
-      const docRef = doc(db, "anggota_keluarga", personId);
-      const docSnap = await getDoc(docRef);
-      return docSnap.exists() ? docSnap.data().nama : "-";
+    async function getName(pid) {
+      if (!pid) return "-";
+      const s = await getDoc(doc(db, "anggota_keluarga", pid));
+      return s.exists() ? s.data().nama : "-";
     }
 
-    const ayahName = await getNameById(d.ayah_id);
-    const ibuName = await getNameById(d.ibu_id);
-    const pasanganName = await getNameById(d.pasangan_id);
+    const ayah = await getName(d.ayah_id);
+    const ibu = await getName(d.ibu_id);
+    const pasangan = await getName(d.pasangan_id);
 
-    document.getElementById("profile").innerHTML = `
-      <img src="${d.foto_url || 'images/icon-512.png'}" width="150" style="border-radius:50%; margin-bottom:20px;">
+    container.innerHTML = `
+      <img src="${d.foto_url || 'images/icon-512.png'}" width="150" style="border-radius:50%">
       <h2>${d.nama}</h2>
-      <p><strong>Ayah:</strong> ${ayahName}</p>
-      <p><strong>Ibu:</strong> ${ibuName}</p>
-      <p><strong>Pasangan:</strong> ${pasanganName}</p>
+      <p>Ayah: ${ayah}</p>
+      <p>Ibu: ${ibu}</p>
+      <p>Pasangan: ${pasangan}</p>
     `;
 
-  } catch(err){
-    console.error("Gagal load profile:", err);
-    document.getElementById("profile").innerHTML = "<p>Terjadi kesalahan saat memuat data</p>";
+  } catch (err) {
+    console.error("ERROR DETAIL:", err);
+    container.innerHTML = `<p style="color:red">Error: ${err.message}</p>`;
   }
 }
 

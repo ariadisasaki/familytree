@@ -59,6 +59,89 @@ function buildTree(data){
   });
 
   // =========================
+  // 2. PASANGAN DARI pasangan_id
+  // =========================
+  data.forEach(p => {
+    if(p.pasangan_id){
+
+      let key = [p.id, p.pasangan_id].sort().join("_");
+
+      if(!pasanganMap[key]){
+        pasanganMap[key] = {
+          name: "",
+          ayah: p.id,
+          ibu: p.pasangan_id,
+          children: []
+        };
+      }
+    }
+  });
+
+  // =========================
+  // 3. PASANGAN DARI ANAK
+  // =========================
+  data.forEach(p => {
+
+    if(p.ayah_id && p.ibu_id){
+
+      let key = [p.ayah_id, p.ibu_id].sort().join("_");
+
+      if(!pasanganMap[key]){
+        pasanganMap[key] = {
+          name: "",
+          ayah: p.ayah_id,
+          ibu: p.ibu_id,
+          children: []
+        };
+      }
+
+      pasanganMap[key].children.push({
+        id: p.id,
+        name: p.nama
+      });
+    }
+  });
+
+  // =========================
+  // 4. BENTUK NAMA PASANGAN
+  // =========================
+  Object.keys(pasanganMap).forEach(key => {
+
+    let pasangan = pasanganMap[key];
+
+    let nama1 = parentNodes[pasangan.ayah]?.name || "?";
+    let nama2 = parentNodes[pasangan.ibu]?.name || "?";
+
+    pasangan.name = nama1 + " + " + nama2;
+
+    // tempel ke salah satu (ayah)
+    if(parentNodes[pasangan.ayah]){
+      parentNodes[pasangan.ayah].children.push(pasangan);
+    }
+  });
+
+  // =========================
+  // 5. ROOT
+  // =========================
+  let root = {
+    name: "Keluarga",
+    children: []
+  };
+
+  data.forEach(p => {
+    if(!p.ayah_id && !p.ibu_id){
+      root.children.push(parentNodes[p.id]);
+    }
+  });
+
+  if(root.children.length === 0){
+    root.children = Object.values(parentNodes);
+  }
+
+  drawTree(root);
+}
+
+  // =========================
   // 2. KELOMPOKKAN ANAK BERDASARKAN AYAH+IBU
   // =========================
   data.forEach(p => {

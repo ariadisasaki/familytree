@@ -71,48 +71,40 @@ buildTree(members);
 // =============================
 // BUILD TREE STRUCTURE
 // =============================
-function buildTree(data){
+function buildTree(data) {
+  let map = {};
 
-let map = {};
+  // =============================
+  // Buat node untuk setiap anggota
+  // =============================
+  data.forEach(person => {
+    map[person.id] = {
+      name: person.nama,
+      spouse: person.pasangan_id || null, // simpan pasangan jika ada
+      children: []
+    };
+  });
 
-// buat node
-data.forEach(person=>{
-map[person.id] = {
-name: person.nama,
-children:[]
-};
-});
+  // =============================
+  // Hubungkan anak ke ayah
+  // =============================
+  data.forEach(person => {
+    if (person.ayah_id && map[person.ayah_id]) {
+      map[person.ayah_id].children.push(map[person.id]);
+    }
+  });
 
-// hubungkan anak ke orang tua
-data.forEach(person=>{
+  // =============================
+  // Tentukan root virtual
+  // Jika lebih dari satu root (tanpa ayah), buat node virtual "Keluarga"
+  // =============================
+  let roots = data.filter(p => !p.ayah_id).map(p => map[p.id]);
+  let root = (roots.length === 1) ? roots[0] : { name: "Keluarga", children: roots };
 
-// prioritas ayah
-if(person.ayah_id && map[person.ayah_id]){
-map[person.ayah_id].children.push(map[person.id]);
-}
-
-// jika ayah tidak ada pakai ibu
-else if(person.ibu_id && map[person.ibu_id]){
-map[person.ibu_id].children.push(map[person.id]);
-}
-
-});
-
-// root virtual
-let root = {
-name:"Keluarga",
-children:[]
-};
-
-// semua orang tanpa orang tua jadi root
-data.forEach(person=>{
-if(!person.ayah_id && !person.ibu_id){
-root.children.push(map[person.id]);
-}
-});
-
-drawTree(root);
-
+  // =============================
+  // Panggil fungsi drawTree untuk menggambar tree
+  // =============================
+  drawTree(root);
 }
 
 // =============================
@@ -185,15 +177,11 @@ nodes.append("circle")
 
 // TEXT
 
+// TEXT (dengan pasangan)
 nodes.append("text")
-
-.attr("dy",4)
-
-.attr("x",-10)
-
-.text(d=>d.data.name);
-
-}
+  .attr("dy", 4)
+  .attr("x", -10)
+  .text(d => d.data.spouse ? d.data.name + " + " + d.data.spouse : d.data.name);
 
 
 // =============================

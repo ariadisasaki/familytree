@@ -24,20 +24,28 @@ const db = getFirestore(app);
 // =============================
 async function loadData() {
   const querySnapshot = await getDocs(collection(db,"anggota_keluarga"));
+  
   let members = [];
-  querySnapshot.forEach(doc=>{
-  let d = doc.data();
 
-  members.push({
-    id: doc.id.trim().toLowerCase(),
-    nama: d.nama,
-    ayah_id: d.ayah_id ? d.ayah_id.trim().toLowerCase() : "",
-    ibu_id: d.ibu_id ? d.ibu_id.trim().toLowerCase() : "",
-    pasangan_id: d.pasangan_id ? d.pasangan_id.trim().toLowerCase() : ""
+  querySnapshot.forEach(doc=>{
+    let d = doc.data();
+
+    console.log("DATA FIRESTORE:", doc.id, d); // 🔥 TAMBAHKAN INI
+
+    members.push({
+      id: doc.id.trim().toLowerCase(),
+      nama: d.nama,
+      ayah_id: d.ayah_id ? d.ayah_id.trim().toLowerCase() : "",
+      ibu_id: d.ibu_id ? d.ibu_id.trim().toLowerCase() : "",
+      pasangan_id: d.pasangan_id ? d.pasangan_id.trim().toLowerCase() : ""
+    });
   });
-});
+
+  console.log("MEMBERS:", members); // 🔥 TAMBAHKAN INI
+
   buildTree(members);
 }
+
 // =============================
 // BUILD TREE (PASANGAN SYSTEM)
 // =============================

@@ -1,0 +1,76 @@
+/* 1. Reset & Base Styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* 2. Styling Bagan (D3.js Tree) */
+.link {
+    transition: all 0.3s ease;
+    pointer-events: none; /* Garis tidak bisa diklik */
+}
+
+/* Animasi saat node (kotak nama) muncul */
+.node {
+    cursor: pointer;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.node:hover rect {
+    filter: brightness(0.95);
+    stroke-width: 3px;
+}
+
+.node text {
+    user-select: none; /* Agar teks tidak terblok saat di-drag */
+    pointer-events: none;
+}
+
+/* 3. Container Bagan */
+#tree-canvas {
+    background-image: 
+        radial-gradient(#e2e8f0 1px, transparent 1px);
+    background-size: 30px 30px; /* Memberikan efek grid titik-titik di background */
+    background-position: center;
+}
+
+/* 4. Custom Scrollbar (Opsional - agar lebih rapi di Chrome/Edge) */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* 5. Utility: Animasi Loading */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin-custom {
+    animation: spin 1s linear infinite;
+}
+
+/* 6. Responsivitas */
+@media (max-width: 768px) {
+    #tree-canvas {
+        height: 500px; /* Lebih pendek di HP */
+    }
+}

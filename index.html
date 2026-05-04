@@ -1,121 +1,133 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silsilah Keluarga PRO</title>
+    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://png.pngtree.com/png-clipart/20221224/original/pngtree-family-tree-genealogy-members-png-image_8803776.png">
 
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Silsilah Keluarga</title>
-
-<link rel="manifest" href="manifest.json">
-
-<link rel="stylesheet" href="css/style.css">
-
-<script src="https://d3js.org/d3.v7.min.js"></script>
-
+    <!-- Framework & Library -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    
+    <!-- Link CSS Eksternal -->
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
+<body class="bg-slate-50 text-slate-900 antialiased">
 
-<body>
+    <!-- Navbar / Header -->
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-200">
+                <i data-lucide="network" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-none">Silsilah<span class="text-indigo-600">Pro</span></h1>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Digital Genealogy</p>
+            </div>
+        </div>
+        
+        <div class="flex items-center gap-2 md:gap-4">
+            <!-- Tombol Refresh Data -->
+            <button onclick="window.location.reload()" class="p-2 hover:bg-slate-100 rounded-full transition text-slate-600" title="Refresh Data">
+                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+            </button>
+            <!-- Tombol Admin -->
+            <button onclick="toggleModal('loginModal')" class="bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-bold hover:bg-indigo-700 transition shadow-md shadow-indigo-100 flex items-center gap-2">
+                <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <span class="hidden md:inline">Admin</span>
+            </button>
+        </div>
+    </nav>
 
+    <main class="max-w-7xl mx-auto p-4 md:p-8">
+        
+        <!-- Dashboard Statistics Section -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8" id="statsContainer">
+            <!-- Statistik akan di-render otomatis oleh JS melalui api.js -->
+            <div class="animate-pulse bg-white h-24 rounded-2xl border border-slate-100"></div>
+            <div class="animate-pulse bg-white h-24 rounded-2xl border border-slate-100"></div>
+            <div class="animate-pulse bg-white h-24 rounded-2xl border border-slate-100"></div>
+            <div class="animate-pulse bg-white h-24 rounded-2xl border border-slate-100"></div>
+        </div>
 
-<!-- ============================= -->
-<!-- SPLASH SCREEN -->
-<!-- ============================= -->
+        <!-- Tree Canvas Container -->
+        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/60 border border-slate-200 overflow-hidden relative">
+            <!-- Toolbar Info -->
+            <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+                <div class="flex items-center gap-4 text-xs font-medium text-slate-500">
+                    <span class="flex items-center gap-1.5"><i data-lucide="mouse-pointer-2" class="w-3.5 h-3.5"></i> Scroll untuk Zoom</span>
+                    <span class="hidden md:flex items-center gap-1.5"><i data-lucide="move" class="w-3.5 h-3.5"></i> Klik & Seret untuk Geser</span>
+                </div>
+                <button onclick="resetZoom()" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition">
+                    Reset Tampilan
+                </button>
+            </div>
+            
+            <!-- Area Gambar Bagan (D3.js) -->
+            <div id="tree-canvas" class="w-full h-[600px] md:h-[750px] relative">
+                <!-- SVG akan di-render di sini oleh tree.js -->
+            </div>
+        </div>
+    </main>
 
-<div id="splash">
+    <!-- Modal Login Admin -->
+    <div id="loginModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+        <div class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl transform transition-all">
+            <div class="text-center mb-6">
+                <div class="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i data-lucide="lock" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-bold">Akses Terbatas</h3>
+                <p class="text-slate-500 text-sm">Masukkan password untuk mengelola data</p>
+            </div>
+            
+            <input type="password" id="adminPass" class="w-full bg-slate-100 border-none p-4 rounded-2xl mb-4 focus:ring-2 focus:ring-indigo-500 outline-none transition" placeholder="Password Aplikasi">
+            
+            <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white p-4 rounded-2xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200">
+                Masuk Sekarang
+            </button>
+            
+            <button onclick="toggleModal('loginModal')" class="w-full mt-4 text-slate-400 text-sm font-medium hover:text-slate-600">
+                Kembali ke Beranda
+            </button>
+        </div>
+    </div>
 
-<div class="splash-content">
+    <!-- Script Pendukung -->
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/tree.js"></script>
+    
+    <script>
+        // Inisialisasi Icon Lucide
+        lucide.createIcons();
 
-<img src="images/icon-512.png" class="splash-icon">
+        // Fungsi Toggle Modal
+        function toggleModal(id) {
+            document.getElementById(id).classList.toggle('hidden');
+        }
 
-<h1>Silsilah Keluarga</h1>
+        // Pendaftaran Service Worker untuk PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW terdaftar!'))
+                    .catch(err => console.log('SW gagal:', err));
+            });
+        }
 
-<div class="loader"></div>
-
-</div>
-
-</div>
-
-
-
-<!-- ============================= -->
-<!-- HEADER -->
-<!-- ============================= -->
-
-<header>
-
-<h2>Silsilah Keluarga</h2>
-
-<a href="tambah.html" class="btn">+ Tambah Anggota</a>
-
-</header>
-
-
-
-<!-- ============================= -->
-<!-- TREE AREA -->
-<!-- ============================= -->
-
-<div id="tree"></div>
-
-
-
-<!-- ============================= -->
-<!-- JS APP -->
-<!-- ============================= -->
-
-<script type="module" src="js/app.js"></script>
-
-
-
-<!-- ============================= -->
-<!-- SERVICE WORKER -->
-<!-- ============================= -->
-
-<script>
-
-if ("serviceWorker" in navigator) {
-
-navigator.serviceWorker.register("sw.js");
-
-}
-
-</script>
-
-
-
-<!-- ============================= -->
-<!-- SPLASH SCRIPT -->
-<!-- ============================= -->
-
-<script>
-
-document.addEventListener("DOMContentLoaded", function(){
-
-setTimeout(function(){
-
-const splash = document.getElementById("splash");
-
-if(splash){
-
-splash.style.opacity="0";
-
-setTimeout(function(){
-
-splash.style.display="none";
-
-},500);
-
-}
-
-},2000);
-
-});
-
-</script>
-
-
+        // Eksekusi data saat halaman dimuat
+        window.onload = () => {
+            if (typeof fetchStats === "function") fetchStats();
+            if (typeof loadTree === "function") loadTree();
+        };
+    </script>
 </body>
 </html>

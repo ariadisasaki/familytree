@@ -4,7 +4,7 @@
  */
 const CONFIG = {
     // EDIT BAGIAN INI: Masukkan URL Web App Anda
-    API_URL: "https://script.google.com/macros/s/AKfycbyDeRbbanROMrmPjRUGpCoZbAzUV8xAjUmwU471KBLsoUpo0EB5xKNf_8dqal0uIVOp7A/exec",
+    API_URL: "https://script.google.com/macros/s/AKfycbxsNrC_Wmkql2LJi4VTC9Lxz47AtTxxvNS7CQp54TQm4rV9fNARis1Nhp2ia5zQ505cZw/exec",
     PASSWORD_DEFAULT: "keluarga123" 
 };
 
